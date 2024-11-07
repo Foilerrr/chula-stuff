@@ -1,0 +1,11 @@
+class archer:
+    def __init__(self, name, health, damage, movement, range):
+        self.name = name
+        self.health = 100
+        self.damage = 50
+        self.movement = 2
+        self.range = 5
+
+char_dict = {"Oda" : archer("Oda",4,5,6,6)}
+
+print(char_dict["Oda"].health)
