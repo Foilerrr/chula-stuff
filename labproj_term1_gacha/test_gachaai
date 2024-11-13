@@ -1,8 +1,16 @@
 import pygame
 import random
+import os
 
 # Initialize Pygame
 pygame.init()
+
+# Load the images
+good_banner_image_path = os.path.join('game files', 'Banner', 'Banner Gacha', 'Banner.zip - Legendary Gacha_Banner.png')
+bad_banner_image_path = os.path.join('game files', 'Banner', 'Banner Gacha', 'Banner .zip - Epic Gacha_Banner.png')
+
+good_banner_image = pygame.image.load(good_banner_image_path)
+bad_banner_image = pygame.image.load(bad_banner_image_path)
 
 # Screen dimensions
 screen_width = 1700
@@ -157,21 +165,66 @@ def roll_gacha_badbanner(times):
         results.append(result)
     return results
 
+# Function to display the good banner image
+def display_good_banner(surface):
+    surface.blit(good_banner_image, (0, 0))
+
+# Function to display the bad banner image
+def display_bad_banner(surface):
+    surface.blit(bad_banner_image, (0, 0))
+
+# Input box class
+class InputBox:
+    def __init__(self, x, y, w, h, text=''):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.color = gray
+        self.text = text
+        self.txt_surface = font.render(text, True, self.color)
+        self.active = False
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # If the user clicked on the input_box rect.
+            if self.rect.collidepoint(event.pos):
+                # Toggle the active variable.
+                self.active = not self.active
+            else:
+                self.active = False
+            # Change the current color of the input box.
+            self.color = white if self.active else gray
+        if event.type == pygame.KEYDOWN:
+            if self.active:
+                if event.key == pygame.K_RETURN:
+                    return self.text
+                elif event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                else:
+                    self.text += event.unicode
+                # Re-render the text.
+                self.txt_surface = font.render(self.text, True, self.color)
+        return None
+
+    def draw(self, screen):
+        # Blit the text.
+        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+        # Blit the rect.
+        pygame.draw.rect(screen, self.color, self.rect, 2)
+
 # Main loop
 running = True
 result = None
 current_banner = 1
-gems = 100
+gems = 1000
+input_box = InputBox(50, 50, 250, 32)
 
 while running:
+    screen.fill(black)
     mouse_x, mouse_y = pygame.mouse.get_pos()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if 50 <= mouse_x <= 150 and 50 <= mouse_y <= 100:
-                gems += 1000
-            elif current_banner == 1:
+            if current_banner == 1:
                 if 1300 <= mouse_x <= 1500 and 850 <= mouse_y <= 900:
                     if gems >= 10:
                         gems -= 10
@@ -201,24 +254,26 @@ while running:
                         result = ["Insufficient gems"]
                 elif 1600 <= mouse_x <= 1700 and 50 <= mouse_y <= 100:
                     current_banner = 1
+        
+        code = input_box.handle_event(event)
+        if code:
+            if code == "SPECIALCODE":
+                gems += 1000
+                input_box.text = ''
+                input_box.txt_surface = font.render(input_box.text, True, input_box.color)
 
-    screen.fill(black)  # Clear screen with black color
+    if current_banner == 1:
+        display_good_banner(screen)
+    else:
+        display_bad_banner(screen)
 
     # Display gem counter
     draw_text(f"Gems: {gems}", font, white, screen, 50, 10)
 
-    # Button to add 1000 gems
-    if 50 <= mouse_x <= 150 and 50 <= mouse_y <= 100:
-        pygame.draw.rect(screen, white, (50, 50, 100, 50))
-        draw_text("Add 1000", font, black, screen, 55, 65)
-    else:
-        pygame.draw.rect(screen, gray, (50, 50, 100, 50))
-        draw_text("Add 1000", font, black, screen, 55, 65)
+    # Draw the input box
+    input_box.draw(screen)
 
     if current_banner == 1:
-        # Display instructions
-        draw_text("Good banner", font, white, screen, 750, 100)
-
         # Display buttons with hover effect
         if 1300 <= mouse_x <= 1500 and 850 <= mouse_y <= 900:
             pygame.draw.rect(screen, white, (1300, 850, 200, 50))
@@ -243,9 +298,6 @@ while running:
             draw_text("Next", font, black, screen, 1625, 65)
 
     elif current_banner == 2:
-        # Display instructions
-        draw_text("Bad banner", font, white, screen, 750, 100)
-
         # Display buttons with hover effect
         if 1300 <= mouse_x <= 1500 and 850 <= mouse_y <= 900:
             pygame.draw.rect(screen, white, (1300, 850, 200, 50))
