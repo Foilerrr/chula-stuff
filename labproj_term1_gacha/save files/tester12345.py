@@ -239,11 +239,11 @@ def draw_home_screen(surface):
         pygame.draw.rect(surface, gray, (700, 500, 200, 50))
         draw_text("Deck", font, black, surface, 750, 515)
 
-def draw_deck_screen(surface):
+def draw_deck_screen(surface, selected_rarity):
     surface.fill(black)
     y_offset = 50
     x_offset = 50
-    max_width = screen_width - 200  # Leave space for the buttons
+    max_width = screen_width - 250  # Leave space for the buttons and selected characters
     characters = []
 
     if selected_rarity == "Common":
@@ -255,7 +255,34 @@ def draw_deck_screen(surface):
     elif selected_rarity == "Legendary":
         characters = [char.name for char in char_dict_legendary.values() if char.name in player_deck]
 
+    character_positions = {}  # Dictionary to store character positions
+
     for character_name in characters:
+        profile_image_path = os.path.join('game files', 'Profile', f'L - {character_name}_Profile (2).png')
+        if os.path.exists(profile_image_path):
+            profile_image = pygame.image.load(profile_image_path)
+            surface.blit(profile_image, (x_offset, y_offset))
+            character_positions[character_name] = (x_offset, y_offset)  # Store position
+            x_offset += profile_image.get_width() + 10
+            if x_offset + profile_image.get_width() > max_width:
+                x_offset = 50
+                y_offset += profile_image.get_height() + 10
+        else:
+            draw_text(f"Image not found for {character_name}", font, white, surface, x_offset, y_offset)
+            x_offset += 200  # Assuming a fixed width for missing images
+            if x_offset + 200 > max_width:
+                x_offset = 50
+                y_offset += 40
+
+    return character_positions  # Return character positions
+
+def draw_selected_characters(surface, selected_characters):
+    surface.fill(black)
+    y_offset = 50
+    x_offset = 50
+    max_width = screen_width - 100
+
+    for character_name in selected_characters:
         profile_image_path = os.path.join('game files', 'Profile', f'L - {character_name}_Profile (2).png')
         if os.path.exists(profile_image_path):
             profile_image = pygame.image.load(profile_image_path)
@@ -273,7 +300,7 @@ def draw_deck_screen(surface):
 
 def draw_rarity_buttons(surface):
     mouse_x, mouse_y = pygame.mouse.get_pos()
-    rarities = ["Common", "Rare", "Epic", "Legendary"]
+    rarities = ["Com", "Rare", "Epic", "Leg"]
     y_offset = 50
 
     for rarity in rarities:
@@ -283,6 +310,21 @@ def draw_rarity_buttons(surface):
         else:
             pygame.draw.rect(surface, gray, (1600, y_offset, 100, 50))
             draw_text(rarity, font, black, surface, 1625, y_offset + 15)
+        y_offset += 60
+
+def draw_player_buttons(surface):
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    players = ["P1", "P2"]
+    y_offset = 350
+    x_offset = screen_width - 100  # Adjusted to fit the button width
+
+    for player in players:
+        if x_offset <= mouse_x <= x_offset + 100 and y_offset <= mouse_y <= y_offset + 50:
+            pygame.draw.rect(surface, white, (x_offset, y_offset, 100, 50))
+            draw_text(player, font, black, surface, x_offset + 25, y_offset + 15)
+        else:
+            pygame.draw.rect(surface, gray, (x_offset, y_offset, 100, 50))
+            draw_text(player, font, black, surface, x_offset + 25, y_offset + 15)
         y_offset += 60
 
 # Main loop
@@ -295,6 +337,9 @@ current_character_index = 0
 current_screen = "home"
 selected_rarity = "Common"
 player_deck = []
+selected_player = "Player 1"
+char_dict_player1 = []
+char_dict_player2 = []
 
 while running:
     screen.fill(black)
@@ -362,6 +407,26 @@ while running:
                         selected_rarity = "Epic"
                     elif 230 <= mouse_y <= 280:
                         selected_rarity = "Legendary"
+                    elif 1600 <= mouse_x <= 1700 and 350 <= mouse_y <= 400:
+                        current_screen = "player1"
+                    elif 1600 <= mouse_x <= 1700 and 410 <= mouse_y <= 460:
+                        current_screen = "player2"
+                else:
+                    character_positions = draw_deck_screen(screen, selected_rarity)
+                    for character_name, (x, y) in character_positions.items():
+                        profile_image_path = os.path.join('game files', 'Profile', f'L - {character_name}_Profile (2).png')
+                        profile_image = pygame.image.load(profile_image_path)
+                        rect = profile_image.get_rect(topleft=(x, y))
+                        if rect.collidepoint(event.pos):
+                            if event.button == 1 and len(char_dict_player1) < 10:  # Left mouse button for Player 1
+                                char_dict_player1.append(character_name)
+                                player_deck.remove(character_name)
+                            elif event.button == 3 and len(char_dict_player2) < 10:  # Right mouse button for Player 2
+                                char_dict_player2.append(character_name)
+                                player_deck.remove(character_name)
+            elif current_screen == "player1" or current_screen == "player2":
+                if 50 <= mouse_x <= 150 and 850 <= mouse_y <= 900:
+                    current_screen = "deck"
 
         code = input_box.handle_event(event)
         if code:
@@ -441,9 +506,28 @@ while running:
                 pygame.draw.rect(screen, gray, (1600, 50, 100, 50))
                 draw_text("Back", font, black, screen, 1625, 65)
     elif current_screen == "deck":
-        draw_deck_screen(screen)  # Add this line
-        draw_rarity_buttons(screen)  # Add this line
+        character_positions = draw_deck_screen(screen, selected_rarity)
+        draw_rarity_buttons(screen)
+        draw_player_buttons(screen)
 
+        # Draw the "Back" button
+        if 50 <= mouse_x <= 150 and 850 <= mouse_y <= 900:
+            pygame.draw.rect(screen, white, (50, 850, 100, 50))
+            draw_text("Back", font, black, screen, 75, 865)
+        else:
+            pygame.draw.rect(screen, gray, (50, 850, 100, 50))
+            draw_text("Back", font, black, screen, 75, 865)
+    elif current_screen == "player1":
+        draw_selected_characters(screen, char_dict_player1)
+        # Draw the "Back" button
+        if 50 <= mouse_x <= 150 and 850 <= mouse_y <= 900:
+            pygame.draw.rect(screen, white, (50, 850, 100, 50))
+            draw_text("Back", font, black, screen, 75, 865)
+        else:
+            pygame.draw.rect(screen, gray, (50, 850, 100, 50))
+            draw_text("Back", font, black, screen, 75, 865)
+    elif current_screen == "player2":
+        draw_selected_characters(screen, char_dict_player2)
         # Draw the "Back" button
         if 50 <= mouse_x <= 150 and 850 <= mouse_y <= 900:
             pygame.draw.rect(screen, white, (50, 850, 100, 50))
@@ -454,5 +538,6 @@ while running:
 
     pygame.display.flip()
     pygame.display.update()
-
+print(char_dict_player1)
+print(char_dict_player2)
 pygame.quit()
