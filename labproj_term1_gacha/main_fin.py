@@ -207,11 +207,13 @@ class Grid:
         for x in range(self.column):
             for y in range(self.row):
                 cell = self.grid[x][y]
-                cell['color'] = (255, 255, 255, 130)
+                cell['color'] = (255, 255, 255, 130) 
     
     def reset_grid(self):
         self.grid = []
         self.create_grid()
+        self.grid_surface.fill((0, 0, 0, 0))
+        
 
 class Game:
     def __init__(self):
@@ -436,7 +438,7 @@ class Game:
     def stat_show(self, x, y, w, h, k, selected_character):
 
         fontz = self.font_path.get("AncientModernTales-a7Po")
-        smallText = pygame.font.Font(fontz,50)
+        smallText = pygame.font.Font(fontz,40)
 
         title = smallText.render("Stats", True, (255,255,255))
         hp_text = smallText.render(f"HP: {selected_character.health}", True, (255,255,255))
@@ -485,6 +487,7 @@ class Game:
                         self.grid.highlight_attack(base_x + dx, base_y + dy)
 
     def highlight_movement_range(self, name, move_x, move_y):
+        self.grid.reset_highlights()  # Reset highlights before highlighting movement range
         if self.selected_pic not in self.moved_character:
             for char in self.placed_characters:
                 if char.name == name:
@@ -530,7 +533,7 @@ class Game:
                 x, y = pos
                 cell_info = self.grid.grid[x][y]
                 # Check if the cell is occupied by another character
-                if any(char.x == x and char.y == y for char in self.placed_characters):
+                if (x, y) != (selected_character.x, selected_character.y) and any(char.x == x and char.y == y for char in self.placed_characters):
                     print(f"Cannot move {name} to ({x}, {y}): Cell is already occupied.")
                     return
                 if selected_character in self.placed_characters and cell_info['color'] == (0, 255, 0, 150):
@@ -553,8 +556,22 @@ class Game:
     def start_menu(self):
         self.current_state = "menu"
 
+    def start_menu_b(self):
+        char_dict_player1_L.clear()
+        char_dict_player2_L.clear()
+        self.current_state = "menu"
+
     def start_game(self):
+        self.grid.reset_grid()
+        self.grid.draw_prepare()
         self.current_state = "game"
+        self.turn = 1
+        self.selected_char = None
+        self.selected_pic = None
+        self.selected_target = None
+        self.attacked_character = []
+        self.placed_characters = []
+        self.moved_character = []
 
     def start_gacha(self):
         self.current_state = "gacha"
@@ -570,7 +587,7 @@ class Game:
         quit()
 
     def draw_game(self):
-        
+        self.grid.reset_grid()
         background = self.background_images.get("mainback") 
         screen.blit(background, (0, 0))
         self.grid.draw_prepare()
@@ -578,7 +595,7 @@ class Game:
         self.draw()
         self.draw_deck()
         self.create_button("battle", 150, 10, 100, 30, (255,255,255), (0,0,0), 30, self.start_battle)
-        self.create_button("back", 1450, 10, 100, 30, (255,255,255), (0,0,0), 30, self.start_menu)
+        self.create_button("back", 1450, 10, 100, 30, (255,255,255), (0,0,0), 30, self.start_menu_b)
         
     def draw_deck(self):
         deck1 = char_dict_player1_L
@@ -602,7 +619,7 @@ class Game:
         self.draw()
         self.create_butend("End", 1450, 10, 100, 30, (255, 255, 255), (0, 0, 0), 30, self.end_turn)
         self.create_button(str(self.turn), 150, 10, 100, 30, (255, 255, 255), (0, 0, 0), 30, None)
-
+        self.create_button("back", 1450, 900, 100, 30, (255,255,255), (0,0,0), 30, self.start_menu_b)
         
         for char in list(self.placed_characters): 
             if char_dict_deck_all[char.name].health <= 0:
@@ -652,11 +669,8 @@ class Game:
         self.moved_character.clear()
         self.attacked_character.clear()
         self.placed_characters.clear()
-        if "1" in message: 
-            char_dict_player2_L.clear()
-        elif "2" in message:
-            char_dict_player2_L.clear()
-        self.grid.reset_highlights()
+        char_dict_player2_L.clear()
+        char_dict_player2_L.clear()
         self.start_menu()
         pygame.display.update()
         pygame.time.wait(3000)
