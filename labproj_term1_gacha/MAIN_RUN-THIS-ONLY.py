@@ -91,9 +91,6 @@ char_dict_common = {
             "ranger3" : archer("ranger3"),
              }
 char_dict_rare = {
-                #"John" : rare_warrior("John"),
-                #"Paul" : rare_warrior("Paul"),
-                #"Richard" : rare_warrior("Richard"),
                 "Xu Jin" : rare_horseman("Xu Jin"),
                 "Yamato" : rare_horseman("Yamato"),
                 "Yi Sun" : rare_horseman("Yi Sun"),
