@@ -658,11 +658,11 @@ class Game:
 
     def display_win_screen(self, message):
         screen.fill((0, 0, 0))  
-        font = pygame.font.Font(None, 74)
+        font = pygame.font.Font(os.path.join("Fonts", "AncientModernTales-a7Po.ttf"), 74)
         text = font.render("WIN", True, (255, 255, 255))
         msg = font.render(message, True, (255, 255, 255))
         screen.blit(text, (screen.get_width() // 2 - text.get_width() // 2, screen.get_height() // 2 - text.get_height() // 2))
-        screen.blit(msg, (screen.get_width() // 2 - text.get_width() // 2, screen.get_height() // 2 - text.get_height() // 2+150))
+        screen.blit(msg, (screen.get_width() // 2.3 - text.get_width() // 2, screen.get_height() // 2 - text.get_height() // 2+150))
         self.moved_character.clear()
         self.attacked_character.clear()
         self.placed_characters.clear()
