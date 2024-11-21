@@ -657,7 +657,9 @@ class Game:
         pygame.display.update()
 
     def display_win_screen(self, message):
-        screen.fill((0, 0, 0))  
+        screen.fill((0, 0, 0))
+        background = self.background_images.get("mainback") 
+        screen.blit(background, (0, 0))  
         font = pygame.font.Font(os.path.join("Fonts", "AncientModernTales-a7Po.ttf"), 74)
         text = font.render("WIN", True, (255, 255, 255))
         msg = font.render(message, True, (255, 255, 255))
