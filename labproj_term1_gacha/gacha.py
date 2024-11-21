@@ -20,7 +20,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Gacha")
 
 # Font
-font = pygame.font.Font(None, 36)
+font = pygame.font.Font(os.path.join("Fonts","AncientModernTales-a7Po.ttf" ), 36)
 
 # Colors
 white = (255, 255, 255)
