@@ -324,6 +324,3 @@ def start_deck(screen):
                 draw_text("Back", font, black, screen, 75, 865)
 
         pygame.display.flip()
-
-    print(char_dict_player1)
-    print(char_dict_player2)

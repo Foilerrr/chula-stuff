@@ -625,7 +625,6 @@ class Game:
                     del char_dict_player1_L[char.name]
                 elif char.name in char_dict_player2_L:
                     del char_dict_player2_L[char.name]
-            print(char.name)
     
 
        
